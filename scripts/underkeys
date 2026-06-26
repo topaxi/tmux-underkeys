@@ -65,9 +65,19 @@ status() {
   local current_session=${1:-}
   local current_style=${2:-fg=blue,bold}
   local other_style=${3:-fg=white}
+  local sep=$(tmux show-option -gqv @underkeys-session-separator)
+  if [[ -z "$sep" ]]; then
+    sep=' '
+  fi
+  local first=1
 
   pick_underkeys \
     | while IFS=$'\t' read -r key index session_name; do
+      if [[ $first -eq 0 ]]; then
+        printf '#[default]%s' "$sep"
+      fi
+      first=0
+
       if [[ "$session_name" == "$current_session" ]]; then
         style=$current_style
       else
@@ -83,8 +93,6 @@ status() {
       else
         printf '%s' "$session_name"
       fi
-
-      printf '#[default] '
     done
 }
 
