@@ -24,15 +24,15 @@ list_sessions() {
 
   case "$sort_order" in
     name)
-      tmux list-sessions -F '#{session_name}' | sort
+      tmux list-sessions -F '#{session_id}	#{session_name}' | sort -t'	' -k2,2
       ;;
     tmux)
-      tmux list-sessions -F '#{session_name}'
+      tmux list-sessions -F '#{session_id}	#{session_name}'
       ;;
     *)
       tmux list-sessions -F '#{session_created}	#{session_id}	#{session_name}' \
         | sort -k1,1n -k2,2 \
-        | cut -f3-
+        | cut -f2-
       ;;
   esac
 }
@@ -41,7 +41,7 @@ pick_underkeys() {
   local used_keys=''
 
   list_sessions \
-    | while IFS= read -r session_name; do
+    | while IFS=$'\t' read -r session_id session_name; do
       local session_lower=${session_name,,}
       local key=''
       local index=-1
@@ -57,7 +57,7 @@ pick_underkeys() {
         fi
       done
 
-      printf '%s\t%s\t%s\n' "$key" "$index" "$session_name"
+      printf '%s\t%s\t%s\t%s\n' "$key" "$index" "$session_id" "$session_name"
     done
 }
 
@@ -69,10 +69,11 @@ status() {
   if [[ -z "$sep" ]]; then
     sep=' '
   fi
+  local mouse=$(underkeys_option '@underkeys-mouse' 'on')
   local first=1
 
   pick_underkeys \
-    | while IFS=$'\t' read -r key index session_name; do
+    | while IFS=$'\t' read -r key index session_id session_name; do
       if [[ $first -eq 0 ]]; then
         printf '#[default]%s' "$sep"
       fi
@@ -84,6 +85,10 @@ status() {
         style=$other_style
       fi
 
+      if [[ $mouse != 'off' ]]; then
+        printf '#[range=session|%s]' "$session_id"
+      fi
+
       printf '#[%s]' "$style"
 
       if [[ $index -ge 0 ]]; then
@@ -92,6 +97,10 @@ status() {
         printf '%s' "${session_name:index + 1}"
       else
         printf '%s' "$session_name"
+      fi
+
+      if [[ $mouse != 'off' ]]; then
+        printf '#[norange]'
       fi
     done
 }
@@ -104,7 +113,7 @@ switch_session() {
     exit 1
   fi
 
-  while IFS=$'\t' read -r key _index session_name; do
+  while IFS=$'\t' read -r key _index _session_id session_name; do
     if [[ $key == "$wanted_key" ]]; then
       tmux switch-client -t "$session_name"
       return 0

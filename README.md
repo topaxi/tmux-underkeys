@@ -64,11 +64,18 @@ set -g @underkeys-session-separator ' '
 set -g @underkeys-sort 'created'
 set -g @underkeys-current-style 'fg=blue,bold'
 set -g @underkeys-style 'fg=white'
+set -g @underkeys-mouse 'on'
 ```
 
 Set `@underkeys-status` to `off` if you want to place the status segment yourself.
 
 Set `@underkeys-sort` to `created`, `name`, or `tmux` to choose the session order used for key assignment.
+
+Set `@underkeys-mouse` to `off` to disable click-to-switch. When `on` (the default),
+each session name in the status line is wrapped in a `range=session` region and a
+`MouseDown1Status` binding switches to the clicked session (window clicks still fall
+through to `select-window`). Disable it if you would rather bind the status mouse keys
+yourself.
 
 ## How Keys Are Picked
 

@@ -23,6 +23,7 @@ style_other="$(underkeys_option '@underkeys-style' 'fg=white')"
 status_enabled="$(underkeys_option '@underkeys-status' 'on')"
 status_position="$(underkeys_option '@underkeys-position' 'right')"
 status_separator="$(underkeys_option '@underkeys-separator' ' ')"
+mouse_enabled="$(underkeys_option '@underkeys-mouse' 'on')"
 status_command="#($CURRENT_DIR/scripts/underkeys status '#S' '$style_current' '$style_other')"
 
 tmux set-option -gq '@underkeys-dir' "$CURRENT_DIR"
@@ -40,6 +41,12 @@ if [[ $status_enabled != 'off' ]]; then
       tmux set-option -gq "$status_option" "$current_status$status_separator$status_command"
     fi
   fi
+fi
+
+if [[ $mouse_enabled != 'off' ]]; then
+  tmux bind-key -n MouseDown1Status if-shell -F '#{==:#{mouse_status_range},session}' \
+    'switch-client -t=' \
+    'select-window -t='
 fi
 
 tmux bind-key -n "$trigger_key" switch-client -T "$key_table" \; display-message 'underkeys'
