@@ -93,6 +93,8 @@ status() {
       else
         printf '%s' "$session_name"
       fi
+
+      printf '#[default]'
     done
 }
 
